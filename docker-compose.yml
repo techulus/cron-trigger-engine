@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  database:
+    container_name: database
+    build: ./db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: thisisasecret
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+    networks:
+      - backend
+
+volumes:
+  database-data:
+
+networks:
+  backend:
+    driver: bridge
+    driver_opts:
+      subnet: 192.168.0.0/24
+      gateway: 192.168.0.1
