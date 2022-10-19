@@ -16,13 +16,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
 
     res.status(200).json({ jobs });
   } else if (req.method === 'POST') {
-    const { name, url } = req.body;
+    const { name, url, schedule } = req.body;
 
     // Create the job
     const job = await prisma.job.create({
       data: {
-        name,
         url,
+        name,
+        schedule,
       },
     });
 
@@ -32,7 +33,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
 
     // Start the cron job
     const result: { schedule: BigInt }[] = await prisma.$queryRawUnsafe(
-      `select cron.schedule('* * * * *', $$
+      `select cron.schedule('${schedule}', $$
       select status from http_get('${url}');
       $$);`,
     );

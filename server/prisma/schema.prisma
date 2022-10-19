@@ -13,6 +13,7 @@ datasource db {
 model Job {
   id              Int       @id @default(autoincrement())
   name            String
+  schedule        String
 
   url             String
   requestOptions  Json?
