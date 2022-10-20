@@ -1,12 +1,12 @@
-import classnames from "classnames";
+import classnames from 'classnames';
 
-export function Spinner({ message = null, className = "" }) {
+export function Spinner({ message = null, className = '' }) {
   return (
     <div className="flex">
       <svg
         className={classnames(
-          "animate-spin h-5 w-5 text-gray-900 dark:text-gray-100",
-          className
+          'animate-spin h-5 w-5 text-gray-900 dark:text-gray-100',
+          className,
         )}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

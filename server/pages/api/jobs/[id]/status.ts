@@ -13,7 +13,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (req.method === 'GET') {
     const result: { status: string }[] = await prisma.$queryRaw(Prisma.sql`
     SELECT * FROM cron.job_run_details where jobid = ${parseInt(
-      id,
+      String(id),
     )} order by start_time desc limit 1;
     `);
 

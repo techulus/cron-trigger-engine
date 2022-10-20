@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 export const Queries = {
-  Job: 'jobData',
-  JobStatus: 'jobStatusData',
+  Jobs: 'jobs',
+  JobStatus: 'jobStatus',
+  JobDetails: 'jobDetails',
 };
 
 export const getJobs = () =>
@@ -10,3 +11,6 @@ export const getJobs = () =>
 
 export const getJobStatus = (id: number) =>
   axios.get(`/api/jobs/${id}/status`).then((res) => res.data?.status);
+
+export const getJobDetailsById = (id: number) =>
+  axios.get(`/api/jobs/${id}`).then((res) => res.data);

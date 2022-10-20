@@ -1,81 +1,57 @@
 import { Job } from '@prisma/client';
 import type { NextPage } from 'next';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { SpinnerWithSpacing } from '../components/spinner';
-import { getJobs, getJobStatus, Queries } from '../helpers/query';
-import cronstrue from 'cronstrue';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import Link from 'next/link';
+import { SpinnerWithSpacing } from '../../components/spinner';
+import { getJobDetailsById, Queries } from '../../helpers/query';
+import { JobRun } from '../api/jobs/[id]';
+import { useMutation } from 'react-query';
 import axios from 'axios';
 
-const Job = ({ job }: { job: Job }) => {
-  const { data: status } = useQuery<'running' | 'failing' | 'pending'>(
-    [Queries.JobStatus, job.id],
-    () => getJobStatus(job.id),
-  );
-
-  const queryClient = useQueryClient();
-
-  const cancelJob = useMutation(async (id: string) => {
-    await axios.delete(`/api/jobs/${id}`);
-    queryClient.invalidateQueries([Queries.Jobs]);
-  });
-
+const JobRunView = ({ run }: { run: JobRun }) => {
   return (
     <tr>
       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8">
-        {job.name}
+        {run.return_message === '1 row' ? 'OK' : run.return_message}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-        {job.url}
+        {new Date(run.start_time).toLocaleString()}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-        {cronstrue.toString(job.schedule)}
+        {new Date(run.end_time).toLocaleString()}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-        {(status === 'running' && (
+        {(run.status === 'succeeded' && (
           <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-            Running
+            Success
           </span>
-        )) ||
-          null}
-        {status === 'failing' && (
+        )) || (
           <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-            Failing
+            Failed
           </span>
         )}
-        {status === 'pending' && (
-          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-            Pending
-          </span>
-        )}
-      </td>
-      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 lg:pr-8">
-        <Link href={`/job/${job.id}`}>
-          <a className="text-indigo-600 hover:text-indigo-900">
-            Logs<span className="sr-only">, {job.name}</span>
-          </a>
-        </Link>
-        <Link href={`/job/${job.id}/edit`}>
-          <a className="text-indigo-600 hover:text-indigo-900 ml-4">
-            Edit<span className="sr-only">, {job.name}</span>
-          </a>
-        </Link>
-        <button
-          type="button"
-          className="text-red-600 hover:text-red-900 ml-4"
-          onClick={() => cancelJob.mutate(String(job.id))}
-        >
-          Delete<span className="sr-only">, {job.name}</span>
-        </button>
       </td>
     </tr>
   );
 };
 
-const Dashboard: NextPage = () => {
-  const { isLoading, error, data: jobs } = useQuery(Queries.Jobs, getJobs);
+const JobDetails: NextPage = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
+  const { isLoading, error, data } = useQuery<{ job: Job; runs: JobRun[] }>(
+    [Queries.JobStatus, id],
+    () => getJobDetailsById(Number(id)),
+    { enabled: !!id },
+  );
+
+  const { job, runs } = data ?? {};
+
+  const cancelJob = useMutation((id: string) => {
+    return axios.delete(`/api/jobs/${id}`);
+  });
 
   useEffect(() => {
     if (error) {
@@ -90,7 +66,7 @@ const Dashboard: NextPage = () => {
         <header className="py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold tracking-tight text-white">
-              Dashboard
+              {isLoading ? 'Loading...' : job?.name}
             </h1>
           </div>
         </header>
@@ -106,10 +82,10 @@ const Dashboard: NextPage = () => {
                 <div className="sm:flex sm:items-center">
                   <div className="sm:flex-auto">
                     <h1 className="text-xl font-semibold text-gray-900">
-                      Jobs
+                      Trigger logs
                     </h1>
                     <p className="mt-2 text-sm text-gray-700">
-                      A list of all the cron triggers scheduled
+                      A list of all the job triggers
                     </p>
                   </div>
                   <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -117,7 +93,15 @@ const Dashboard: NextPage = () => {
                       type="button"
                       className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                     >
-                      Add job
+                      Pause
+                    </button>
+
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto ml-4"
+                      onClick={() => cancelJob.mutate(String(id))}
+                    >
+                      Cancel
                     </button>
                   </div>
                 </div>
@@ -135,19 +119,19 @@ const Dashboard: NextPage = () => {
                                 scope="col"
                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8"
                               >
-                                Name
+                                Response
                               </th>
                               <th
                                 scope="col"
                                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                               >
-                                Target URL
+                                Start
                               </th>
                               <th
                                 scope="col"
                                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                               >
-                                Schedule
+                                End
                               </th>
                               <th
                                 scope="col"
@@ -155,17 +139,11 @@ const Dashboard: NextPage = () => {
                               >
                                 Status
                               </th>
-                              <th
-                                scope="col"
-                                className="relative py-3.5 pl-3 pr-4 sm:pr-6 lg:pr-8"
-                              >
-                                <span className="sr-only">Edit</span>
-                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200 bg-white">
-                            {jobs?.map((job: Job) => (
-                              <Job job={job} key={job.id} />
+                            {runs?.map((run: JobRun) => (
+                              <JobRunView run={run} key={run.runid} />
                             ))}
                           </tbody>
                         </table>
@@ -182,4 +160,4 @@ const Dashboard: NextPage = () => {
   );
 };
 
-export default Dashboard;
+export default JobDetails;
