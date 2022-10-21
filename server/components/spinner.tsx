@@ -5,7 +5,7 @@ export function Spinner({ message = null, className = '' }) {
     <div className="flex">
       <svg
         className={classnames(
-          'animate-spin h-5 w-5 text-gray-900 dark:text-gray-100',
+          'animate-spin h-5 w-5 text-gray-900',
           className,
         )}
         xmlns="http://www.w3.org/2000/svg"

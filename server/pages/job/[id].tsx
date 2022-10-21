@@ -9,6 +9,8 @@ import { getJobDetailsById, Queries } from '../../helpers/query';
 import { JobRun } from '../api/jobs/[id]';
 import { useMutation } from 'react-query';
 import axios from 'axios';
+import { ChevronRightIcon } from '@heroicons/react/20/solid';
+import Link from 'next/link';
 
 const JobRunView = ({ run }: { run: JobRun }) => {
   return (
@@ -65,6 +67,30 @@ const JobDetails: NextPage = () => {
       <div className="bg-gray-800 pb-32">
         <header className="py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <nav className="flex" aria-label="Breadcrumb">
+              <ol role="list" className="flex items-center space-x-4">
+                <li>
+                  <div>
+                    <Link href="/">
+                      <a className="text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Dashboard
+                      </a>
+                    </Link>
+                  </div>
+                </li>
+                <li>
+                  <div className="flex items-center">
+                    <ChevronRightIcon
+                      className="h-5 w-5 flex-shrink-0 text-gray-400"
+                      aria-hidden="true"
+                    />
+                    <div className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                      Job
+                    </div>
+                  </div>
+                </li>
+              </ol>
+            </nav>
             <h1 className="text-3xl font-bold tracking-tight text-white">
               {isLoading ? 'Loading...' : job?.name}
             </h1>
@@ -91,14 +117,7 @@ const JobDetails: NextPage = () => {
                   <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     <button
                       type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-                    >
-                      Pause
-                    </button>
-
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto ml-4"
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto"
                       onClick={() => cancelJob.mutate(String(id))}
                     >
                       Cancel

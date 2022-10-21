@@ -1,5 +1,6 @@
 import { Job, PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { isValidCron } from 'cron-validator';
 
 type Data = {
   jobs?: Job[];
@@ -27,11 +28,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
       },
     });
 
-    if (!job) {
+    if (!isValidCron(schedule) || !job) {
       return res.status(400).json({ error: 'Create job failed' });
     }
 
     // Start the cron job
+    // TODO: remove unsafe
     const result: { schedule: BigInt }[] = await prisma.$queryRawUnsafe(
       `select cron.schedule('${schedule}', $$
       select status from http_get('${url}');

@@ -1,7 +1,7 @@
 import { Job } from '@prisma/client';
 import type { NextPage } from 'next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { SpinnerWithSpacing } from '../components/spinner';
+import { Spinner, SpinnerWithSpacing } from '../components/spinner';
 import { getJobs, getJobStatus, Queries } from '../helpers/query';
 import cronstrue from 'cronstrue';
 import { useEffect } from 'react';
@@ -67,7 +67,13 @@ const Job = ({ job }: { job: Job }) => {
           className="text-red-600 hover:text-red-900 ml-4"
           onClick={() => cancelJob.mutate(String(job.id))}
         >
-          Delete<span className="sr-only">, {job.name}</span>
+          {cancelJob.isLoading ? (
+            <Spinner className='h-3 w-3 mt-1' />
+          ) : (
+            <>
+              Delete<span className="sr-only">, {job.name}</span>
+            </>
+          )}
         </button>
       </td>
     </tr>
@@ -113,12 +119,11 @@ const Dashboard: NextPage = () => {
                     </p>
                   </div>
                   <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-                    >
-                      Add job
-                    </button>
+                    <Link href="/job/new">
+                      <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
+                        Add job
+                      </a>
+                    </Link>
                   </div>
                 </div>
                 <div
